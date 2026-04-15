@@ -418,6 +418,9 @@ const CONFIG = {
   // Your published Google Sheet key (the long key starting with "2PACX-" from Publish to web)
   SHEET_ID: '2PACX-1vTrftjD_AaBrFz0NsxD7xa1iITWb4EO8Zl4NTRs2Pb-Njwp_LG32Qo83K14zgvHGDO1uh7mVnwp6WmY',
 
+  // Separate published sheet key for employee photos
+  EMPLOYEES_SHEET_ID: '2PACX-1vSjCpNFl_00VXV9EAoQ6XZac5_blOteEFGvggwacLclQfFOZ0FRi2EYnQdOozgdvF6bbhzxHyTXN-VC',
+
   // Paste the embed URL for the spreadsheet shown in Quadrant 4.
   // Get it from: File ▸ Share ▸ Publish to web ▸ choose sheet ▸ Embed ▸ Copy
   EMBED_URL: 'https://servpromaps.servpronet.com/portal/apps/dashboards/ad3d3fbab38d4f50841b00f9a7d8ad61',
@@ -753,7 +756,9 @@ async function renderEmployees(reviews) {
   // Fetch photos using flexible column name lookup
   let photos = {};
   try {
-    const rows = await fetchSheet('Employees');
+    const empUrl = `https://docs.google.com/spreadsheets/d/e/${CONFIG.EMPLOYEES_SHEET_ID}/pub?output=csv`;
+    const empResp = await fetch(empUrl);
+    const rows = empResp.ok ? parseCSV(await empResp.text()) : null;
     console.log('[Dashboard] Employees rows fetched:', rows ? rows.length : 'null');
     if (rows && rows.length > 0) {
       console.log('[Dashboard] Employees columns:', Object.keys(rows[0]));
