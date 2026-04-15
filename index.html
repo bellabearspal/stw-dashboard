@@ -860,7 +860,7 @@ async function renderEmployees(reviews) {
   if (!needsScroll || scrolling.length <= SCROLL_SLOTS) return;
 
   const track      = document.getElementById('emp-scroll-track');
-  const rowStep    = rowH + GAP;
+  const rowStep    = scrollH + GAP;
   const loopHeight = scrolling.length * rowStep;
   let pos = 0;
 
