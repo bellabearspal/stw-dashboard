@@ -330,8 +330,12 @@
       font-size: .9em; font-weight: 700; color: #fff;
       flex-shrink: 0;
     }
+    .emp-row.r1 .emp-avatar, .emp-row.r2 .emp-avatar, .emp-row.r3 .emp-avatar,
+    .emp-row.r1 .emp-init,   .emp-row.r2 .emp-init,   .emp-row.r3 .emp-init {
+      width: var(--medal-h, 42px); height: var(--medal-h, 42px);
+    }
     .emp-name { flex: 1; font-size: .87em; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .emp-place { font-size: .72em; font-weight: 700; font-family: 'Graphie','Arial Black',sans-serif; letter-spacing: 1px; color: var(--text); white-space: nowrap; flex-shrink: 0; }
+    .emp-place { font-size: .72em; font-weight: 700; font-family: 'Graphie','Arial Black',sans-serif; letter-spacing: 1px; color: #ff6720; white-space: nowrap; flex-shrink: 0; }
     .emp-name-group { flex: 1; display: flex; align-items: center; gap: 6px; overflow: hidden; flex-wrap: nowrap; }
     .emp-name-group .emp-name-pair { display: flex; align-items: center; gap: 5px; overflow: hidden; }
     .emp-name-group .emp-name-pair span { font-size: .87em; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -434,7 +438,7 @@ const CONFIG = {
   SLIDE_MS: 9000,
 
   // How often to re-fetch reviews / employee data
-  DATA_REFRESH_MS: 3 * 60 * 1000,    // 3 minutes
+  DATA_REFRESH_MS: 60 * 60 * 1000,   // 1 hour
 
   // How often to re-fetch weather
   WEATHER_REFRESH_MS: 10 * 60 * 1000, // 10 minutes
@@ -830,17 +834,25 @@ async function renderEmployees(reviews) {
       : '') +
     '</div>';
 
-  const TOTAL_ROWS   = 10;
+  const MEDAL_ROWS   = 3;
   const SCROLL_SLOTS = 7;
   const GAP          = 4;
+  const MEDAL_SCALE  = 1.3; // medal rows are 30% taller than scroll rows
   const panelH       = body.clientHeight;
-  const rowH         = Math.floor((panelH - ((TOTAL_ROWS - 1) * GAP)) / TOTAL_ROWS);
+  const totalGap     = (MEDAL_ROWS + SCROLL_SLOTS - 1) * GAP;
+  const scrollH      = Math.floor((panelH - totalGap) / (MEDAL_ROWS * MEDAL_SCALE + SCROLL_SLOTS));
+  const medalH       = Math.floor(scrollH * MEDAL_SCALE);
 
-  // Set CSS variable so avatars match row height exactly
-  document.documentElement.style.setProperty('--row-h', rowH + 'px');
+  // Set CSS variables so avatars match their row height
+  document.documentElement.style.setProperty('--row-h',   scrollH + 'px');
+  document.documentElement.style.setProperty('--medal-h', medalH  + 'px');
 
-  body.querySelectorAll('.emp-row').forEach(r => {
-    r.style.height       = rowH + 'px';
+  body.querySelectorAll('.emp-row.r1, .emp-row.r2, .emp-row.r3').forEach(r => {
+    r.style.height       = medalH + 'px';
+    r.style.marginBottom = GAP + 'px';
+  });
+  body.querySelectorAll('.emp-row:not(.r1):not(.r2):not(.r3)').forEach(r => {
+    r.style.height       = scrollH + 'px';
     r.style.marginBottom = GAP + 'px';
   });
 
