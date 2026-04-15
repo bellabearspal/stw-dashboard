@@ -1,0 +1,932 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Business Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:          #333f48;
+      --panel:       #3c4a54;
+      --panel-head:  #2b3840;
+      --border:      #4a5c68;
+      --accent:      #6cc24a;
+      --accent2:     #8dd46a;
+      --gold:        #ffc107;
+      --green:       #6cc24a;
+      --text:        #e8edf0;
+      --muted:       #8ca0ae;
+      --divider:     rgba(108,194,74,.2);
+    }
+
+    html, body {
+      width: 100%; height: 100%;
+      overflow: hidden;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', system-ui, sans-serif;
+    }
+
+    /* ── Top bar ─────────────────────────────── */
+    #topbar {
+      height: 64px;
+      background: #000;
+      border-bottom: 2px solid var(--accent);
+      display: flex;
+      align-items: center;
+      padding: 0 20px;
+      gap: 16px;
+      flex-shrink: 0;
+      position: relative;
+    }
+    #topbar .logo-img {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      height: 58px;
+      width: auto;
+      display: block;
+      overflow: visible;
+    }
+    #topbar .clock { margin-left: auto; font-size: .85em; color: var(--text); font-weight: 600; }
+
+    /* ── Q4 Sheet iframe ────────────────────── */
+    .sheet-frame { width: 100%; height: 100%; border: none; display: block; }
+
+    /* ── Grid ────────────────────────────────── */
+    #grid {
+      display: flex;
+      width: 100vw;
+      height: calc(100vh - 64px);
+      gap: 3px;
+      background: var(--bg);
+    }
+    .col {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      gap: 3px;
+      min-width: 0;
+    }
+    /* Left column: reviews (40%), employees (60%) */
+    #col-left #p-reviews   { flex: 4; }
+    #col-left #p-employees { flex: 6; }
+    /* Right column: weather (40%), spreadsheet (60%) */
+    #col-right #p-weather { flex: 4; }
+    #col-right #p-sheet   { flex: 6; }
+
+    /* ── Panel ───────────────────────────────── */
+    .panel {
+      background: var(--panel);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      border: 1px solid var(--border);
+    }
+    .panel-head {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      padding: 9px 14px;
+      background: var(--panel-head);
+      border-bottom: 1.5px solid var(--divider);
+      flex-shrink: 0;
+    }
+    .panel-head h2 { font-size: .9em; font-weight: 700; letter-spacing: .4px; color: #ff6720; }
+    .panel-head .icon { font-size: 1.1em; }
+    .panel-head .ml { margin-left: auto; font-size: .7em; color: var(--muted); }
+    .live-dot {
+      margin-left: auto;
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 6px var(--green);
+      animation: blink 2s ease infinite;
+    }
+    @keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: .3; } }
+
+    .panel-body {
+      flex: 1;
+      overflow: hidden;
+      padding: 14px;
+      position: relative;
+    }
+    .panel-body.no-pad { padding: 0; }
+
+    .center-msg {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      gap: 10px;
+      color: var(--muted);
+      font-size: .85em;
+      text-align: center;
+    }
+    .spin {
+      width: 22px; height: 22px;
+      border: 2px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Q1 Reviews ─────────────────────────── */
+    .review-slide {
+      position: absolute;
+      inset: 0;
+      padding: 18px 20px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity .7s ease;
+      pointer-events: none;
+    }
+    .review-slide.active { opacity: 1; pointer-events: auto; }
+
+    .rev-biz {
+      font-size: .7em;
+      font-weight: 700;
+      color: var(--accent2);
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+      margin-bottom: 5px;
+    }
+    .rev-stars { color: var(--gold); font-size: 1.3em; margin-bottom: 10px; line-height: 1; }
+    .rev-text {
+      font-size: 1.05em;
+      line-height: 1.6;
+      font-style: italic;
+      color: var(--text);
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      margin-bottom: 10px;
+    }
+    .rev-emp {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(108,194,74,.15);
+      border: 1px solid rgba(108,194,74,.5);
+      border-radius: 20px;
+      padding: 3px 12px;
+      font-size: .78em;
+      color: var(--accent2);
+      margin-bottom: 12px;
+    }
+    .rev-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .rev-author { font-size: .82em; font-weight: 600; color: var(--muted); }
+    .rev-date   { font-size: .75em; color: var(--muted); }
+
+    .rev-dots {
+      position: absolute;
+      bottom: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 6px;
+    }
+    .dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--border);
+      transition: background .3s, transform .3s;
+    }
+    .dot.active { background: var(--accent); transform: scale(1.3); }
+
+    /* ── Q2 Weather ─────────────────────────── */
+    .weather-col {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      height: 100%;
+    }
+    .wx-card {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255,255,255,.035);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 4px 10px;
+      flex: 1;
+      min-height: 0;
+      overflow: hidden;
+    }
+    .wx-icon  { font-size: 1.3em; flex-shrink: 0; width: 26px; text-align: center; }
+    .wx-city  { font-size: .78em; font-weight: 700; white-space: nowrap; min-width: 90px; }
+    .wx-desc  { font-size: .62em; color: var(--muted); }
+    .wx-temp  { font-size: 1.1em; font-weight: 800; color: var(--gold); white-space: nowrap; flex-shrink: 0; }
+    .wx-hourly {
+      display: flex;
+      gap: 3px;
+      margin-left: 8px;
+      flex: 1;
+      overflow: hidden;
+    }
+    .wx-hour {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1px;
+      background: rgba(255,255,255,.05);
+      border-radius: 4px;
+      padding: 2px 3px;
+      flex: 1;
+      min-width: 0;
+    }
+    .wx-hour-time { font-size: .55em; color: var(--muted); white-space: nowrap; }
+    .wx-hour-icon { font-size: .75em; line-height: 1; }
+    .wx-hour-temp { font-size: .65em; font-weight: 700; color: var(--text); white-space: nowrap; }
+
+    /* ── Q3 Employees ───────────────────────── */
+    .emp-list {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      gap: 0;
+    }
+    #emp-fixed {
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+    }
+    #emp-scroll-viewport {
+      flex: 1;
+      overflow: hidden;
+      position: relative;
+    }
+    #emp-scroll-track {
+      position: absolute;
+      width: 100%;
+      top: 0;
+      will-change: transform;
+    }
+    .emp-row {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      border-radius: 6px;
+      padding: 4px 9px;
+      background: rgba(255,255,255,.025);
+      border: 1px solid transparent;
+      box-sizing: border-box;
+      flex-shrink: 0;
+    }
+    .emp-row.r1 { border-color: rgba(255,215,0,.35); }
+    .emp-row.r2 { border-color: rgba(192,192,192,.3); }
+    .emp-row.r3 { border-color: rgba(205,127,50,.3); }
+
+    .emp-rank { font-size: .88em; font-weight: 700; width: 22px; text-align: center; flex-shrink: 0; }
+    .emp-rank.gold   { color: #ffd700; }
+    .emp-rank.silver { color: #c0c0c0; }
+    .emp-rank.bronze { color: #cd7f32; }
+    .emp-rank.other  { color: var(--accent); }
+
+    .emp-avatar {
+      width: 34px; height: 34px;
+      border-radius: 50%;
+      object-fit: cover;
+      flex-shrink: 0;
+      border: 2px solid var(--border);
+      background: var(--border);
+    }
+    .emp-init {
+      width: 34px; height: 34px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), #3a7a20);
+      display: flex; align-items: center; justify-content: center;
+      font-size: .9em; font-weight: 700; color: #fff;
+      flex-shrink: 0;
+    }
+    .emp-name { flex: 1; font-size: .87em; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .emp-bar-wrap { width: 70px; height: 4px; background: rgba(108,194,74,.2); border-radius: 2px; }
+    .emp-bar-fill { height: 100%; border-radius: 2px; background: var(--accent); }
+    .emp-badge {
+      font-size: .72em; color: var(--accent2); font-weight: 600;
+      background: rgba(108,194,74,.15); padding: 2px 8px; border-radius: 10px;
+      white-space: nowrap; flex-shrink: 0;
+    }
+
+    /* .sheet-frame styles moved to iframe zoom block above */
+  </style>
+</head>
+<body>
+
+<!-- ═══ TOP BAR ═══════════════════════════════════════════ -->
+<div id="topbar">
+  <svg class="logo-img" viewBox="0 0 260 118" xmlns="http://www.w3.org/2000/svg">
+    <!-- House/roof shape: peak → left roof → left eave → left wall → bottom → right wall → right eave → right roof -->
+    <path d="M130,4 L28,46 L7,46 L7,59 L22,59 L22,80 L238,80 L238,59 L253,59 L253,46 L232,46 Z"
+          fill="#ff6720" stroke="white" stroke-width="3.5" stroke-linejoin="round"/>
+    <!-- SERVPRO text centered inside the house -->
+    <text x="128" y="72"
+          font-family="'Arial Black','Helvetica Neue',Arial,sans-serif"
+          font-size="27" font-weight="900"
+          fill="white" text-anchor="middle" letter-spacing="0.5">SERVPRO</text>
+    <!-- ® superscript -->
+    <text x="219" y="54"
+          font-family="Arial,Helvetica,sans-serif"
+          font-size="11" fill="white" font-weight="400">&#174;</text>
+    <!-- TEAM WEAVER bold white below -->
+    <text x="130" y="112"
+          font-family="'Arial Black','Helvetica Neue',Arial,sans-serif"
+          font-size="21" font-weight="900"
+          fill="white" text-anchor="middle" letter-spacing="1.5">TEAM WEAVER</text>
+  </svg>
+  <span class="clock" id="clock">Loading…</span>
+</div>
+
+<!-- ═══ GRID ═══════════════════════════════════════════════ -->
+<div id="grid">
+
+  <!-- LEFT COLUMN -->
+  <div class="col" id="col-left">
+
+    <!-- Q1 · Reviews -->
+    <div class="panel" id="p-reviews">
+      <div class="panel-head">
+        <span class="icon">⭐</span>
+        <h2>Recent Google Reviews</h2>
+        <div class="live-dot"></div>
+      </div>
+      <div class="panel-body" id="reviews-body">
+        <div class="center-msg"><div class="spin"></div><span>Loading reviews…</span></div>
+      </div>
+    </div>
+
+    <!-- Q3 · Employees -->
+    <div class="panel" id="p-employees">
+      <div class="panel-head">
+        <span class="icon">🏆</span>
+        <h2>Top Reviewed Employees</h2>
+      </div>
+      <div class="panel-body" id="employees-body">
+        <div class="center-msg"><div class="spin"></div><span>Loading employees…</span></div>
+      </div>
+    </div>
+
+  </div><!-- /col-left -->
+
+  <!-- RIGHT COLUMN -->
+  <div class="col" id="col-right">
+
+    <!-- Q2 · Weather -->
+    <div class="panel" id="p-weather">
+      <div class="panel-head">
+        <span class="icon">🌤️</span>
+        <h2>Regional Weather</h2>
+        <span class="ml" id="wx-time"></span>
+      </div>
+      <div class="panel-body" id="weather-body">
+        <div class="center-msg"><div class="spin"></div><span>Loading weather…</span></div>
+      </div>
+    </div>
+
+    <!-- Q4 · Dashboard embed -->
+    <div class="panel" id="p-sheet">
+      <div class="panel-body no-pad" id="sheet-body" style="flex:1">
+        <div class="center-msg" id="sheet-placeholder">
+          <span style="font-size:2em">📊</span>
+          <span>Add your EMBED_URL in<br>the CONFIG section below</span>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /col-right -->
+
+</div><!-- /grid -->
+
+<script>
+/* ═══════════════════════════════════════════════════════════
+   ★  CONFIGURATION  —  update these values for your setup  ★
+   ═══════════════════════════════════════════════════════════ */
+const CONFIG = {
+  // Your published Google Sheet key (the long key starting with "2PACX-" from Publish to web)
+  SHEET_ID: '2PACX-1vTrftjD_AaBrFz0NsxD7xa1iITWb4EO8Zl4NTRs2Pb-Njwp_LG32Qo83K14zgvHGDO1uh7mVnwp6WmY',
+
+  // Paste the embed URL for the spreadsheet shown in Quadrant 4.
+  // Get it from: File ▸ Share ▸ Publish to web ▸ choose sheet ▸ Embed ▸ Copy
+  EMBED_URL: 'https://servpromaps.servpronet.com/portal/apps/dashboards/ad3d3fbab38d4f50841b00f9a7d8ad61',
+
+  // How long each review card is shown (milliseconds)
+  SLIDE_MS: 9000,
+
+  // How often to re-fetch reviews / employee data
+  DATA_REFRESH_MS: 3 * 60 * 1000,    // 3 minutes
+
+  // How often to re-fetch weather
+  WEATHER_REFRESH_MS: 10 * 60 * 1000, // 10 minutes
+};
+
+/* ═══════════════════════════════════════════════════════════
+   WEATHER CITIES  —  edit or reorder as needed
+   ═══════════════════════════════════════════════════════════ */
+const CITIES = [
+  { label: 'State College', lat: 40.7934, lon: -77.8600 },
+  { label: 'Ebensburg',     lat: 40.4851, lon: -78.7245 },
+  { label: 'Bedford',       lat: 40.0151, lon: -78.5036 },
+  { label: 'Altoona',       lat: 40.5187, lon: -78.3947 },
+  { label: 'Indiana',       lat: 40.6212, lon: -79.1525 },
+];
+
+/* ═══════════════════════════════════════════════════════════
+   CLOCK
+   ═══════════════════════════════════════════════════════════ */
+function tickClock() {
+  const now = new Date();
+  document.getElementById('clock').textContent =
+    now.toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric' }) +
+    '  ·  ' +
+    now.toLocaleTimeString('en-US', { hour:'numeric', minute:'2-digit', second:'2-digit' });
+}
+tickClock();
+setInterval(tickClock, 1000);
+
+/* ═══════════════════════════════════════════════════════════
+   WEATHER
+   ═══════════════════════════════════════════════════════════ */
+const WMO = {
+  0:  ['☀️','Clear'],        1:  ['🌤️','Mainly clear'],
+  2:  ['⛅','Partly cloudy'],3:  ['☁️','Overcast'],
+  45: ['🌫️','Fog'],         48: ['🌫️','Icy fog'],
+  51: ['🌦️','Light drizzle'],53:['🌦️','Drizzle'],   55:['🌧️','Heavy drizzle'],
+  61: ['🌧️','Light rain'],  63: ['🌧️','Rain'],       65:['🌧️','Heavy rain'],
+  71: ['🌨️','Light snow'],  73: ['❄️','Snow'],        75:['❄️','Heavy snow'],
+  77: ['🌨️','Snow grains'],
+  80: ['🌦️','Showers'],     81: ['🌧️','Showers'],    82:['⛈️','Violent showers'],
+  85: ['🌨️','Snow showers'],86: ['❄️','Heavy snow showers'],
+  95: ['⛈️','Thunderstorm'],96: ['⛈️','T-storm + hail'],99:['⛈️','T-storm + hail'],
+};
+
+async function loadWeather() {
+  try {
+    const results = await Promise.all(CITIES.map(async city => {
+      const url = `https://api.open-meteo.com/v1/forecast?latitude=${city.lat}&longitude=${city.lon}` +
+                  `&current=temperature_2m,weather_code` +
+                  `&hourly=temperature_2m,weather_code` +
+                  `&temperature_unit=fahrenheit&timezone=auto&forecast_days=2`;
+      const r = await fetch(url);
+      const d = await r.json();
+
+      // Find the index in hourly data matching right now
+      const now = new Date();
+      const nowStr = now.toISOString().slice(0, 13); // "2026-04-15T14"
+      let startIdx = d.hourly.time.findIndex(t => t.startsWith(nowStr));
+      if (startIdx < 0) startIdx = 0;
+
+      // Hours +2 through +12 every hour (11 snapshots)
+      const hourly = [];
+      for (let step = 2; step <= 12; step += 1) {
+        const idx = startIdx + step;
+        if (idx < d.hourly.time.length) {
+          const t = new Date(d.hourly.time[idx]);
+          hourly.push({
+            label: t.toLocaleTimeString('en-US', { hour: 'numeric', hour12: true }),
+            temp:  Math.round(d.hourly.temperature_2m[idx]),
+            code:  d.hourly.weather_code[idx],
+          });
+        }
+      }
+
+      return {
+        label:  city.label,
+        temp:   Math.round(d.current.temperature_2m),
+        code:   d.current.weather_code,
+        hourly,
+      };
+    }));
+
+    const body = document.getElementById('weather-body');
+    body.innerHTML = `<div class="weather-col">` +
+      results.map(w => {
+        const [icon, desc] = WMO[w.code] || ['🌡️','—'];
+        const hourlyHtml = w.hourly.map(h => {
+          const [hIcon] = WMO[h.code] || ['🌡️'];
+          return `<div class="wx-hour">
+            <div class="wx-hour-time">${h.label}</div>
+            <div class="wx-hour-icon">${hIcon}</div>
+            <div class="wx-hour-temp">${h.temp}°</div>
+          </div>`;
+        }).join('');
+        return `<div class="wx-card">
+          <div class="wx-icon">${icon}</div>
+          <div>
+            <div class="wx-city">${w.label}, PA</div>
+            <div class="wx-desc">${desc}</div>
+          </div>
+          <div class="wx-temp" style="margin-left:6px">${w.temp}°F</div>
+          <div class="wx-hourly">${hourlyHtml}</div>
+        </div>`;
+      }).join('') +
+    `</div>`;
+
+    const t = new Date();
+    document.getElementById('wx-time').textContent =
+      'Updated ' + t.toLocaleTimeString('en-US', {hour:'numeric', minute:'2-digit'});
+  } catch(e) {
+    console.error('Weather error', e);
+    document.getElementById('weather-body').innerHTML =
+      `<div class="center-msg" style="color:#ef5350">⚠️ Weather unavailable</div>`;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   CSV PARSER  (handles quoted fields with commas/newlines)
+   ═══════════════════════════════════════════════════════════ */
+function parseCSV(raw) {
+  const rows = [];
+  let row = [], cell = '', inQ = false;
+  for (let i = 0; i < raw.length; i++) {
+    const ch = raw[i];
+    if (ch === '"') {
+      if (inQ && raw[i+1] === '"') { cell += '"'; i++; }
+      else inQ = !inQ;
+    } else if (ch === ',' && !inQ) {
+      row.push(cell.trim()); cell = '';
+    } else if ((ch === '\n' || ch === '\r') && !inQ) {
+      if (ch === '\r' && raw[i+1] === '\n') i++;
+      row.push(cell.trim()); rows.push(row); row = []; cell = '';
+    } else { cell += ch; }
+  }
+  if (cell || row.length) { row.push(cell.trim()); rows.push(row); }
+
+  if (rows.length < 2) return [];
+  const headers = rows[0].map(h => h.replace(/^"|"$/g,'').trim());
+  return rows.slice(1)
+    .filter(r => r.some(c => c))
+    .map(r => Object.fromEntries(headers.map((h,i) => [h, (r[i]||'').replace(/^"|"$/g,'').trim()])));
+}
+
+async function fetchSheet(name) {
+  if (!CONFIG.SHEET_ID || CONFIG.SHEET_ID === 'YOUR_GOOGLE_SHEET_ID_HERE') return null;
+
+  // Detect published key format (starts with 2PACX) vs regular Sheet ID
+  let url;
+  if (CONFIG.SHEET_ID.startsWith('2PACX')) {
+    // Published sheet — use the /pub endpoint with sheet name
+    url = `https://docs.google.com/spreadsheets/d/e/${CONFIG.SHEET_ID}/pub?output=csv&sheet=${encodeURIComponent(name)}`;
+  } else {
+    // Regular editing Sheet ID — use the gviz endpoint
+    url = `https://docs.google.com/spreadsheets/d/${CONFIG.SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(name)}`;
+  }
+
+  const r = await fetch(url);
+  if (!r.ok) throw new Error(`Sheet "${name}" not found (${r.status})`);
+  return parseCSV(await r.text());
+}
+
+/* ═══════════════════════════════════════════════════════════
+   Q1 · REVIEWS SLIDESHOW
+   ═══════════════════════════════════════════════════════════ */
+let _timer = null, _cur = 0;
+
+function renderReviews(rows) {
+  if (!rows || !rows.length) {
+    document.getElementById('reviews-body').innerHTML =
+      `<div class="center-msg">No reviews yet — add some to your sheet!</div>`;
+    return;
+  }
+  // Filter to last 6 months
+  const cutoff = Date.now() - 6 * 30.5 * 24 * 3600 * 1000;
+  const recent = rows.filter(r => {
+    if (!r.Date) return true;
+    try { return new Date(r.Date).getTime() >= cutoff; } catch { return true; }
+  });
+  const list = recent.length ? recent : rows;
+
+  const body = document.getElementById('reviews-body');
+  body.innerHTML =
+    list.map((r, i) => {
+      const rating = Math.min(5, Math.max(1, parseInt(r.Rating) || 5));
+      const stars = '★'.repeat(rating) + '☆'.repeat(5 - rating);
+      const text  = r['Review Text'] || r.Review || r.review || '';
+      const name  = r.Reviewer || r['Reviewer Name'] || 'Anonymous';
+      const biz   = r.Business  || r['Business Name'] || '';
+      const emp   = r['Employee Mentioned'] || r.Employee || '';
+      const date  = r.Date ? fmtDate(r.Date) : '';
+      return `<div class="review-slide${i===0?' active':''}" data-idx="${i}">
+        ${biz ? `<div class="rev-biz">${biz}</div>` : ''}
+        <div class="rev-stars">${stars}</div>
+        <div class="rev-text">"${escHtml(text)}"</div>
+        ${emp ? `<div class="rev-emp">👤 ${emp.split(',').map(n => escHtml(n.trim())).join(' &nbsp;·&nbsp; ')}</div>` : ''}
+        <div class="rev-footer">
+          <span class="rev-author">— ${escHtml(name)}</span>
+          ${date ? `<span class="rev-date">${date}</span>` : ''}
+        </div>
+      </div>`;
+    }).join('') +
+    `<div class="rev-dots">${list.map((_,i)=>`<div class="dot${i===0?' active':''}" data-i="${i}"></div>`).join('')}</div>`;
+
+  _cur = 0;
+  if (_timer) clearInterval(_timer);
+  _timer = setInterval(() => {
+    const slides = body.querySelectorAll('.review-slide');
+    const dots   = body.querySelectorAll('.dot');
+    if (!slides.length) return;
+    slides[_cur].classList.remove('active');
+    dots[_cur]?.classList.remove('active');
+    _cur = (_cur + 1) % slides.length;
+    slides[_cur].classList.add('active');
+    dots[_cur]?.classList.add('active');
+  }, CONFIG.SLIDE_MS);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   Q3 · EMPLOYEE LEADERBOARD
+   ═══════════════════════════════════════════════════════════ */
+let _empScrollRAF = null;
+
+// Extract Google Drive file ID from any sharing URL format
+function extractDriveId(url) {
+  if (!url) return null;
+  const patterns = [
+    /\/file\/d\/([a-zA-Z0-9_-]+)/,
+    /[?&]id=([a-zA-Z0-9_-]+)/,
+    /\/d\/([a-zA-Z0-9_-]+)/,
+    /thumbnail\?id=([a-zA-Z0-9_-]+)/,
+    /googleusercontent\.com\/d\/([a-zA-Z0-9_-]+)/,
+  ];
+  for (const p of patterns) {
+    const m = url.match(p);
+    if (m) return m[1];
+  }
+  return null;
+}
+
+// onerror: reads data-init & data-driveid from the img element
+function _empImgFail(el) {
+  const init    = el.dataset.init    || '?';
+  const driveId = el.dataset.driveid || '';
+  if (driveId && !el.dataset.tried) {
+    el.dataset.tried = '1';
+    el.onerror = function() { _empImgFail(el); };
+    el.src = 'https://drive.google.com/uc?export=view&id=' + driveId;
+    return;
+  }
+  const d = document.createElement('div');
+  d.className = 'emp-init';
+  d.textContent = init;
+  el.parentNode.replaceChild(d, el);
+}
+
+// Build photo element: tries Drive thumbnail → uc?export → green circle
+function empPhoto(name, rawUrl) {
+  const init = name.charAt(0).toUpperCase();
+  const id   = extractDriveId(rawUrl);
+  if (!id && !rawUrl) return '<div class="emp-init">' + init + '</div>';
+  const src = id
+    ? 'https://drive.google.com/thumbnail?id=' + id + '&sz=w200-h200'
+    : rawUrl;
+  return '<img class="emp-avatar"'
+    + ' src="' + src + '"'
+    + ' alt="' + escHtml(name) + '"'
+    + ' data-init="' + init + '"'
+    + ' data-driveid="' + (id || '') + '"'
+    + ' onerror="_empImgFail(this)">';
+}
+
+// Case-insensitive lookup for any column containing "photo"
+function findPhotoUrl(row) {
+  if (row['Photo URL'])  return row['Photo URL'].trim();
+  if (row['PhotoURL'])   return row['PhotoURL'].trim();
+  if (row['photo_url'])  return row['photo_url'].trim();
+  if (row['photo url'])  return row['photo url'].trim();
+  const key = Object.keys(row).find(k => k.toLowerCase().includes('photo'));
+  return key ? (row[key] || '').trim() : '';
+}
+
+// One grouped medal row — names comma-separated if tied (no photo)
+function buildMedalRow(rank, names, count, maxCount) {
+  const rClass  = rank===1?'r1':rank===2?'r2':'r3';
+  const rkClass = rank===1?'gold':rank===2?'silver':'bronze';
+  const rkSym   = rank===1?'🥇':rank===2?'🥈':'🥉';
+  const pct     = Math.round(count / maxCount * 100);
+  const nameStr = names.map(n => escHtml(n)).join(', ');
+  return '<div class="emp-row ' + rClass + '">' +
+    '<div class="emp-rank ' + rkClass + '">' + rkSym + '</div>' +
+    '<div class="emp-name">' + nameStr + '</div>' +
+    '<div class="emp-bar-wrap"><div class="emp-bar-fill" style="width:' + pct + '%"></div></div>' +
+    '<div class="emp-badge">' + count + ' ' + (count===1?'mention':'mentions') + '</div>' +
+    '</div>';
+}
+
+// Individual scrolling row with Drive photo
+function buildScrollRow(name, count, rank, photos, maxCount) {
+  const pct = Math.round(count / maxCount * 100);
+  return '<div class="emp-row">' +
+    '<div class="emp-rank other">' + rank + '</div>' +
+    '<div class="emp-name">' + escHtml(name) + '</div>' +
+    '<div class="emp-bar-wrap"><div class="emp-bar-fill" style="width:' + pct + '%"></div></div>' +
+    '<div class="emp-badge">' + count + ' ' + (count===1?'mention':'mentions') + '</div>' +
+    '</div>';
+}
+
+async function renderEmployees(reviews) {
+  const counts = {};
+  (reviews || []).forEach(r => {
+    const field = r['Employee Mentioned'] || r.Employee || '';
+    field.split(',').forEach(name => {
+      const e = name.trim();
+      if (e) counts[e] = (counts[e] || 0) + 1;
+    });
+  });
+
+  // Fetch photos using flexible column name lookup
+  let photos = {};
+  try {
+    const rows = await fetchSheet('Employees');
+    console.log('[Dashboard] Employees rows fetched:', rows ? rows.length : 'null');
+    if (rows && rows.length > 0) {
+      console.log('[Dashboard] Employees columns:', Object.keys(rows[0]));
+      console.log('[Dashboard] First employee row:', rows[0]);
+    }
+    if (rows) rows.forEach(r => {
+      // Employees sheet stores names as "Last, First" — normalize to "First Last"
+      const raw = (r.Name || r.name || '').trim();
+      const n = raw.includes(',')
+        ? raw.split(',').map(s => s.trim()).reverse().join(' ')
+        : raw;
+      const photoUrl = findPhotoUrl(r);
+      console.log('[Dashboard] Employee:', raw, '→', n, '| Photo URL:', photoUrl || '(none)');
+      if (n) photos[n] = photoUrl;
+    });
+    console.log('[Dashboard] Photos map keys:', Object.keys(photos));
+    console.log('[Dashboard] Counts keys:', Object.keys(counts));
+  } catch(e) { console.warn('[Dashboard] Photo fetch error:', e); }
+
+  const body = document.getElementById('employees-body');
+  if (!Object.keys(counts).length) {
+    body.innerHTML = '<div class="center-msg">No mentions yet.</div>';
+    return;
+  }
+
+  // Dense rank
+  const sorted = Object.entries(counts).sort((a,b) => b[1]-a[1]);
+  const ranked = [];
+  let denseRank = 0, lastCount = null;
+  for (const [name, count] of sorted) {
+    if (count !== lastCount) { denseRank++; lastCount = count; }
+    ranked.push({ name, count, rank: denseRank });
+  }
+
+  const maxCount = ranked[0].count || 1;
+
+  // Group medal ranks: each position (1,2,3) = one row
+  const medalGroups = {};
+  ranked.filter(e => e.rank <= 3).forEach(e => {
+    if (!medalGroups[e.rank]) medalGroups[e.rank] = { names: [], count: e.count };
+    medalGroups[e.rank].names.push(e.name);
+  });
+
+  const scrolling = ranked.filter(e => e.rank > 3);
+
+  const fixedHtml = [1, 2, 3].map(r => {
+    const g = medalGroups[r];
+    return g ? buildMedalRow(r, g.names, g.count, maxCount) : '';
+  }).join('');
+
+  const scrollHtml = scrolling.map(e => buildScrollRow(e.name, e.count, e.rank, photos, maxCount)).join('');
+  const needsScroll = scrolling.length > 0;
+
+  body.innerHTML = '<div class="emp-list">' +
+    '<div id="emp-fixed">' + fixedHtml + '</div>' +
+    (needsScroll
+      ? '<div id="emp-scroll-viewport"><div id="emp-scroll-track">' + scrollHtml + scrollHtml + '</div></div>'
+      : '') +
+    '</div>';
+
+  const TOTAL_ROWS   = 10;
+  const SCROLL_SLOTS = 7;
+  const GAP          = 4;
+  const panelH       = body.clientHeight;
+  const rowH         = Math.floor((panelH - ((TOTAL_ROWS - 1) * GAP)) / TOTAL_ROWS);
+
+  body.querySelectorAll('.emp-row').forEach(r => {
+    r.style.height       = rowH + 'px';
+    r.style.marginBottom = GAP + 'px';
+  });
+
+  if (_empScrollRAF) { cancelAnimationFrame(_empScrollRAF); _empScrollRAF = null; }
+  if (!needsScroll || scrolling.length <= SCROLL_SLOTS) return;
+
+  const track      = document.getElementById('emp-scroll-track');
+  const rowStep    = rowH + GAP;
+  const loopHeight = scrolling.length * rowStep;
+  let pos = 0;
+
+  function step() {
+    pos += 0.4;
+    if (pos >= loopHeight) pos -= loopHeight;
+    track.style.transform = 'translateY(-' + pos + 'px)';
+    _empScrollRAF = requestAnimationFrame(step);
+  }
+  _empScrollRAF = requestAnimationFrame(step);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   Q4 · SPREADSHEET EMBED
+   ═══════════════════════════════════════════════════════════ */
+function loadSheet() {
+  const body = document.getElementById('sheet-body');
+  if (CONFIG.EMBED_URL && CONFIG.EMBED_URL !== 'YOUR_EMBED_URL_HERE') {
+    body.innerHTML = `<iframe class="sheet-frame" src="${CONFIG.EMBED_URL}" allow="fullscreen"></iframe>`;
+  }
+  // else the placeholder already shown
+}
+
+/* ═══════════════════════════════════════════════════════════
+   DEMO DATA  (displayed before the sheet is configured)
+   ═══════════════════════════════════════════════════════════ */
+const DEMO = [
+  { Date: ago(2),  Business:'Keystone Auto',   Reviewer:'Sarah M.', Rating:'5', 'Review Text':'Absolutely outstanding — the whole team went above and beyond for me. Best experience I have had in years!',               'Employee Mentioned':'Alex Johnson' },
+  { Date: ago(8),  Business:'Ridge Top Café',  Reviewer:'Tom R.',   Rating:'5', 'Review Text':'Food was incredible and Maria was so attentive and friendly. Will be back every week.',                               'Employee Mentioned':'Maria Garcia' },
+  { Date: ago(15), Business:'Valley Plumbing', Reviewer:'Lisa K.',  Rating:'4', 'Review Text':'Great response time and very professional. Alex fixed everything on the first visit.',                                 'Employee Mentioned':'Alex Johnson' },
+  { Date: ago(22), Business:'Summit Roofing',  Reviewer:'Mike P.',  Rating:'5', 'Review Text':'James and his crew did a spotless job — fast, clean, and well-priced. Highly recommend!',                            'Employee Mentioned':'James Wilson' },
+  { Date: ago(30), Business:'Clearfield HVAC', Reviewer:'Anna T.',  Rating:'5', 'Review Text':'Maria walked me through every step. I finally understand my heating system. Patient and knowledgeable.',             'Employee Mentioned':'Maria Garcia' },
+  { Date: ago(45), Business:'Keystone Auto',   Reviewer:'Dan B.',   Rating:'5', 'Review Text':'Quick and honest — Alex told me I only needed an oil change, not the expensive repair another shop had suggested.',  'Employee Mentioned':'Alex Johnson' },
+  { Date: ago(60), Business:'Ridge Top Café',  Reviewer:'Carol S.', Rating:'5', 'Review Text':'Every dish was amazing and the service from James was impeccable. Already recommended to five friends.',             'Employee Mentioned':'James Wilson' },
+];
+function ago(days) {
+  const d = new Date(); d.setDate(d.getDate()-days); return d.toISOString().slice(0,10);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   HELPERS
+   ═══════════════════════════════════════════════════════════ */
+
+// Converts any Google Drive sharing URL into a direct image URL
+function fmtDate(s) {
+  try {
+    return new Date(s).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+  } catch { return s; }
+}
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+/* ═══════════════════════════════════════════════════════════
+   MAIN LOAD
+   ═══════════════════════════════════════════════════════════ */
+async function loadData() {
+  try {
+    const rows = await fetchSheet('Reviews');
+    if (rows) {
+      renderReviews(rows);
+      await renderEmployees(rows);
+    } else {
+      // Sheet not configured yet — show demo data
+      renderReviews(DEMO);
+      await renderEmployees(DEMO);
+    }
+  } catch(err) {
+    console.error('Data error:', err);
+    renderReviews(DEMO);
+    await renderEmployees(DEMO);
+  }
+}
+
+/* ── Local file detection ───────────────────────────────── */
+if (location.protocol === 'file:') {
+  ['reviews-body','employees-body'].forEach(id => {
+    document.getElementById(id).innerHTML = `
+      <div class="center-msg" style="flex-direction:column;gap:14px;padding:20px;text-align:center">
+        <span style="font-size:2.5em">⚠️</span>
+        <span style="font-size:1em;font-weight:700;color:#ffc107">Dashboard opened as a local file</span>
+        <span style="font-size:.82em;line-height:1.6;color:var(--muted)">
+          Browsers block live data when a file is opened directly.<br>
+          Upload the <strong>dashboard</strong> folder to<br>
+          <strong style="color:var(--accent2)">app.netlify.com/drop</strong><br>
+          then open the hosted URL to see your real sheet data.
+        </span>
+      </div>`;
+  });
+} else {
+  loadData();
+}
+
+/* ── Bootstrap ──────────────────────────────────────────── */
+loadWeather();
+loadSheet();
+
+setInterval(loadWeather, CONFIG.WEATHER_REFRESH_MS);
+
+if (location.protocol !== 'file:') {
+  setInterval(loadData, CONFIG.DATA_REFRESH_MS);
+}
+</script>
+</body>
+</html>
