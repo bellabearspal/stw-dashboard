@@ -331,6 +331,11 @@
       flex-shrink: 0;
     }
     .emp-name { flex: 1; font-size: .87em; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .emp-place { font-size: .72em; font-weight: 700; font-family: 'Graphie','Arial Black',sans-serif; letter-spacing: 1px; color: var(--text); white-space: nowrap; flex-shrink: 0; }
+    .emp-name-group { flex: 1; display: flex; align-items: center; gap: 6px; overflow: hidden; flex-wrap: nowrap; }
+    .emp-name-group .emp-name-pair { display: flex; align-items: center; gap: 5px; overflow: hidden; }
+    .emp-name-group .emp-name-pair span { font-size: .87em; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .emp-name-sep { font-size: .87em; color: var(--muted); flex-shrink: 0; }
     .emp-bar-wrap { width: 70px; height: 4px; background: rgba(108,194,74,.2); border-radius: 2px; }
     .emp-bar-fill { height: 100%; border-radius: 2px; background: var(--accent); }
     .emp-badge {
@@ -712,18 +717,24 @@ function findPhotoUrl(row) {
   return key ? (row[key] || '').trim() : '';
 }
 
-// One grouped medal row — photos shown per person, names comma-separated if tied
+// One grouped medal row — place label, then photo+name pairs
 function buildMedalRow(rank, names, count, maxCount, photos) {
-  const rClass  = rank===1?'r1':rank===2?'r2':'r3';
-  const rkClass = rank===1?'gold':rank===2?'silver':'bronze';
-  const rkSym   = rank===1?'🥇':rank===2?'🥈':'🥉';
-  const pct     = Math.round(count / maxCount * 100);
-  const nameStr = names.map(n => escHtml(n)).join(', ');
-  const photosHtml = names.map(n => empPhoto(n, (photos || {})[n] || '')).join('');
+  const rClass    = rank===1?'r1':rank===2?'r2':'r3';
+  const rkClass   = rank===1?'gold':rank===2?'silver':'bronze';
+  const rkSym     = rank===1?'🥇':rank===2?'🥈':'🥉';
+  const placeStr  = rank===1?'FIRST PLACE':rank===2?'SECOND PLACE':'THIRD PLACE';
+  const pct       = Math.round(count / maxCount * 100);
+  const pairsHtml = names.map((n, i) =>
+    '<div class="emp-name-pair">' +
+      empPhoto(n, (photos || {})[n] || '') +
+      '<span>' + escHtml(n) + '</span>' +
+    '</div>' +
+    (i < names.length - 1 ? '<span class="emp-name-sep">,</span>' : '')
+  ).join('');
   return '<div class="emp-row ' + rClass + '">' +
     '<div class="emp-rank ' + rkClass + '">' + rkSym + '</div>' +
-    photosHtml +
-    '<div class="emp-name">' + nameStr + '</div>' +
+    '<div class="emp-place">' + placeStr + '</div>' +
+    '<div class="emp-name-group">' + pairsHtml + '</div>' +
     '<div class="emp-bar-wrap"><div class="emp-bar-fill" style="width:' + pct + '%"></div></div>' +
     '<div class="emp-badge">' + count + ' ' + (count===1?'mention':'mentions') + '</div>' +
     '</div>';
