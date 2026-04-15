@@ -4,8 +4,23 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Business Dashboard</title>
+  <style>
+    @font-face {
+      font-family: 'Graphie';
+      src: url('Graphie-SemiBold.woff2') format('woff2');
+      font-weight: 600;
+      font-style: normal;
+    }
+    @font-face {
+      font-family: 'Red Hat Display';
+      src: url('RedHatDisplay-Light.woff2') format('woff2');
+      font-weight: 300;
+      font-style: normal;
+    }
+  </style>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Red+Hat+Display:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -28,7 +43,8 @@
       overflow: hidden;
       background: var(--bg);
       color: var(--text);
-      font-family: 'Inter', system-ui, sans-serif;
+      font-family: 'Red Hat Display', system-ui, sans-serif;
+      font-weight: 300;
     }
 
     /* ── Top bar ─────────────────────────────── */
@@ -97,7 +113,7 @@
       border-bottom: 1.5px solid var(--divider);
       flex-shrink: 0;
     }
-    .panel-head h2 { font-size: .9em; font-weight: 700; letter-spacing: .4px; color: #ff6720; }
+    .panel-head h2 { font-size: .9em; font-weight: 700; letter-spacing: 1.5px; color: #ff6720; text-transform: uppercase; font-family: 'Graphie', 'Arial Black', sans-serif; }
     .panel-head .icon { font-size: 1.1em; }
     .panel-head .ml { margin-left: auto; font-size: .7em; color: var(--muted); }
     .live-dot {
@@ -159,6 +175,7 @@
       text-transform: uppercase;
       letter-spacing: 1.2px;
       margin-bottom: 5px;
+      font-family: 'Graphie', 'Arial Black', sans-serif;
     }
     .rev-stars { color: var(--gold); font-size: 1.3em; margin-bottom: 10px; line-height: 1; }
     .rev-text {
@@ -710,8 +727,9 @@ function buildMedalRow(rank, names, count, maxCount) {
 // Individual scrolling row with Drive photo
 function buildScrollRow(name, count, rank, photos, maxCount) {
   const pct = Math.round(count / maxCount * 100);
+  const rankColor = rank % 2 === 0 ? 'var(--accent)' : '#e5e1e6';
   return '<div class="emp-row">' +
-    '<div class="emp-rank other">' + rank + '</div>' +
+    '<div class="emp-rank other" style="color:' + rankColor + '">' + rank + '</div>' +
     '<div class="emp-name">' + escHtml(name) + '</div>' +
     '<div class="emp-bar-wrap"><div class="emp-bar-fill" style="width:' + pct + '%"></div></div>' +
     '<div class="emp-badge">' + count + ' ' + (count===1?'mention':'mentions') + '</div>' +
