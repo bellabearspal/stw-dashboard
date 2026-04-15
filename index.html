@@ -33,7 +33,7 @@
 
     /* ── Top bar ─────────────────────────────── */
     #topbar {
-      height: 64px;
+      height: 80px;
       background: #000;
       border-bottom: 2px solid var(--accent);
       display: flex;
@@ -42,15 +42,16 @@
       gap: 16px;
       flex-shrink: 0;
       position: relative;
+      overflow: hidden;
     }
     #topbar .logo-img {
       position: absolute;
       left: 50%;
       transform: translateX(-50%);
-      height: 58px;
+      height: 76px;
       width: auto;
       display: block;
-      overflow: visible;
+      overflow: hidden;
     }
     #topbar .clock { margin-left: auto; font-size: .85em; color: var(--text); font-weight: 600; }
 
@@ -328,7 +329,7 @@
 
 <!-- ═══ TOP BAR ═══════════════════════════════════════════ -->
 <div id="topbar">
-  <svg class="logo-img" viewBox="0 0 260 118" xmlns="http://www.w3.org/2000/svg">
+  <svg class="logo-img" viewBox="0 0 260 118" xmlns="http://www.w3.org/2000/svg" height="76" width="167">
     <!-- House/roof shape: peak → left roof → left eave → left wall → bottom → right wall → right eave → right roof -->
     <path d="M130,4 L28,46 L7,46 L7,59 L22,59 L22,80 L238,80 L238,59 L253,59 L253,46 L232,46 Z"
           fill="#ff6720" stroke="white" stroke-width="3.5" stroke-linejoin="round"/>
