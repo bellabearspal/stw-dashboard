@@ -359,7 +359,7 @@
 <!-- ═══ TOP BAR ═══════════════════════════════════════════ -->
 <div id="topbar">
   <div class="core-values">
-    <div class="cv-title">TEAM CORE VALUES</div>
+    <div class="cv-title">TEAM CORE TRUTHS</div>
     <div class="cv-list">EASE &nbsp;·&nbsp; EXPEDITE &nbsp;·&nbsp; EMPATHY</div>
     <div class="cv-list">EXCHANGE &nbsp;·&nbsp; EMPOWER &nbsp;·&nbsp; EXPERTISE</div>
   </div>
@@ -764,7 +764,7 @@ function ordinal(n) {
 
 function buildScrollRow(name, count, rank, photos, maxCount) {
   const pct = Math.round(count / maxCount * 100);
-  const rankColor = rank % 2 === 0 ? 'var(--accent)' : '#e5e1e6';
+  const rankColor = rank <= 5 ? 'var(--accent)' : '#e5e1e6';
   const photoHtml = rank === 4 ? empPhoto(name, (photos || {})[name] || '') : '';
   return '<div class="emp-row">' +
     '<div class="emp-rank other" style="color:' + rankColor + '">' + ordinal(rank) + '</div>' +
