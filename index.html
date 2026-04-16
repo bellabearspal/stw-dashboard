@@ -745,12 +745,18 @@ function buildMedalRow(rank, names, count, maxCount, photos) {
 }
 
 // Individual scrolling row — photo only for rank 4
+function ordinal(n) {
+  const s = ['th','st','nd','rd'];
+  const v = n % 100;
+  return n + (s[(v - 20) % 10] || s[v] || s[0]);
+}
+
 function buildScrollRow(name, count, rank, photos, maxCount) {
   const pct = Math.round(count / maxCount * 100);
   const rankColor = rank % 2 === 0 ? 'var(--accent)' : '#e5e1e6';
   const photoHtml = rank === 4 ? empPhoto(name, (photos || {})[name] || '') : '';
   return '<div class="emp-row">' +
-    '<div class="emp-rank other" style="color:' + rankColor + '">' + rank + '</div>' +
+    '<div class="emp-rank other" style="color:' + rankColor + '">' + ordinal(rank) + '</div>' +
     photoHtml +
     '<div class="emp-name">' + escHtml(name) + '</div>' +
     '<div class="emp-bar-wrap"><div class="emp-bar-fill" style="width:' + pct + '%"></div></div>' +
