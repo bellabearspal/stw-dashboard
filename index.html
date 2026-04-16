@@ -508,14 +508,17 @@ async function loadWeather() {
       let startIdx = d.hourly.time.findIndex(t => t.startsWith(nowStr));
       if (startIdx < 0) startIdx = 0;
 
-      // Hours +2 through +12 every hour (11 snapshots)
+      // 11 snapshots evenly spread over 48 hours
+      const SNAP_COUNT = 11;
       const hourly = [];
-      for (let step = 2; step <= 12; step += 1) {
-        const idx = startIdx + step;
+      for (let i = 0; i < SNAP_COUNT; i++) {
+        const step = Math.round(i * 48 / (SNAP_COUNT - 1));
+        const idx  = startIdx + step;
         if (idx < d.hourly.time.length) {
           const t = new Date(d.hourly.time[idx]);
           hourly.push({
-            label: t.toLocaleTimeString('en-US', { hour: 'numeric', hour12: true }),
+            label: t.toLocaleDateString('en-US', { weekday: 'short' }) + ' ' +
+                   t.toLocaleTimeString('en-US', { hour: 'numeric', hour12: true }),
             temp:  Math.round(d.hourly.temperature_2m[idx]),
             code:  d.hourly.weather_code[idx],
           });
