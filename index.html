@@ -260,18 +260,20 @@
     }
     .wx-hour {
       display: flex;
-      flex-direction: column;
+      flex-direction: row;
       align-items: center;
-      gap: 1px;
+      gap: 4px;
       background: rgba(255,255,255,.05);
       border-radius: 4px;
-      padding: 2px 3px;
+      padding: 2px 5px;
       flex: 1;
       min-width: 0;
     }
-    .wx-hour-time { font-size: .55em; color: var(--muted); white-space: nowrap; }
-    .wx-hour-icon { font-size: .75em; line-height: 1; }
-    .wx-hour-temp { font-size: .65em; font-weight: 700; color: var(--text); white-space: nowrap; }
+    .wx-hour-label { display: flex; flex-direction: column; flex: 1; min-width: 0; }
+    .wx-hour-day   { font-size: .62em; font-weight: 700; color: var(--accent); white-space: nowrap; }
+    .wx-hour-time  { font-size: .55em; font-weight: 700; color: #ff6720; white-space: nowrap; }
+    .wx-hour-icon  { font-size: .75em; line-height: 1; flex-shrink: 0; }
+    .wx-hour-temp  { font-size: .65em; font-weight: 700; color: var(--text); white-space: nowrap; flex-shrink: 0; }
 
     /* ── Q3 Employees ───────────────────────── */
     .emp-list {
@@ -517,8 +519,8 @@ async function loadWeather() {
         if (idx < d.hourly.time.length) {
           const t = new Date(d.hourly.time[idx]);
           hourly.push({
-            label: t.toLocaleDateString('en-US', { weekday: 'short' }) + ' ' +
-                   t.toLocaleTimeString('en-US', { hour: 'numeric', hour12: true }),
+            day:  t.toLocaleDateString('en-US', { weekday: 'short' }),
+            time: t.toLocaleTimeString('en-US', { hour: 'numeric', hour12: true }),
             temp:  Math.round(d.hourly.temperature_2m[idx]),
             code:  d.hourly.weather_code[idx],
           });
@@ -540,7 +542,10 @@ async function loadWeather() {
         const hourlyHtml = w.hourly.map(h => {
           const [hIcon] = WMO[h.code] || ['🌡️'];
           return `<div class="wx-hour">
-            <div class="wx-hour-time">${h.label}</div>
+            <div class="wx-hour-label">
+              <span class="wx-hour-day">${h.day}</span>
+              <span class="wx-hour-time">${h.time}</span>
+            </div>
             <div class="wx-hour-icon">${hIcon}</div>
             <div class="wx-hour-temp">${h.temp}°</div>
           </div>`;
