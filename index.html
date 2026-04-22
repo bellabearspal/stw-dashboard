@@ -253,8 +253,8 @@
     .wx-temp  { font-size: 1.1em; font-weight: 800; color: var(--gold); white-space: nowrap; flex-shrink: 0; }
     .wx-hourly {
       display: flex;
-      gap: 3px;
-      margin-left: 8px;
+      gap: 2px;
+      margin-left: 6px;
       flex: 1;
       overflow: hidden;
     }
@@ -262,17 +262,17 @@
       display: flex;
       flex-direction: row;
       align-items: center;
-      gap: 4px;
+      gap: 2px;
       background: rgba(255,255,255,.05);
       border-radius: 4px;
-      padding: 2px 5px;
+      padding: 2px 3px;
       flex: 1;
       min-width: 0;
     }
-    .wx-hour-label { display: flex; flex-direction: column; flex: 1; min-width: 0; }
-    .wx-hour-day   { font-size: .62em; font-weight: 700; color: var(--accent); white-space: nowrap; }
-    .wx-hour-time  { font-size: .55em; font-weight: 700; color: #ff6720; white-space: nowrap; }
-    .wx-hour-icon  { font-size: .75em; line-height: 1; flex-shrink: 0; }
+    .wx-hour-label { display: flex; flex-direction: column; min-width: 0; }
+    .wx-hour-day   { font-size: .58em; font-weight: 700; color: var(--accent); white-space: nowrap; }
+    .wx-hour-time  { font-size: .52em; font-weight: 700; color: #ff6720; white-space: nowrap; }
+    .wx-hour-icon  { font-size: .65em; line-height: 1; flex-shrink: 0; }
     .wx-hour-temp  { font-size: .65em; font-weight: 700; color: var(--text); white-space: nowrap; flex-shrink: 0; }
 
     /* ── Q3 Employees ───────────────────────── */
@@ -511,10 +511,10 @@ async function loadWeather() {
       if (startIdx < 0) startIdx = 0;
 
       // 11 snapshots evenly spread over 48 hours
-      const SNAP_COUNT = 11;
+      const SNAP_COUNT = 17;
       const hourly = [];
       for (let i = 0; i < SNAP_COUNT; i++) {
-        const step = Math.round(i * 48 / (SNAP_COUNT - 1));
+        const step = i * 3; // every 3 hours over 48 hours
         const idx  = startIdx + step;
         if (idx < d.hourly.time.length) {
           const t = new Date(d.hourly.time[idx]);
