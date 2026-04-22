@@ -232,29 +232,29 @@
     .weather-col {
       display: flex;
       flex-direction: column;
-      gap: 4px;
+      gap: 2px;
       height: 100%;
     }
     .wx-card {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
       background: rgba(255,255,255,.035);
       border: 1px solid var(--border);
-      border-radius: 6px;
-      padding: 4px 10px;
+      border-radius: 5px;
+      padding: 2px 6px;
       flex: 1;
       min-height: 0;
       overflow: hidden;
     }
-    .wx-icon  { font-size: 1.3em; flex-shrink: 0; width: 26px; text-align: center; }
-    .wx-city  { font-size: .78em; font-weight: 700; white-space: nowrap; min-width: 90px; }
-    .wx-desc  { font-size: .62em; color: var(--muted); }
+    .wx-icon  { font-size: 1.1em; flex-shrink: 0; width: 22px; text-align: center; }
+    .wx-city  { font-size: .75em; font-weight: 700; white-space: nowrap; min-width: 80px; }
+    .wx-desc  { font-size: .58em; color: var(--muted); }
     .wx-temp  { font-size: 1.1em; font-weight: 800; color: var(--gold); white-space: nowrap; flex-shrink: 0; }
     .wx-hourly {
       display: flex;
       gap: 2px;
-      margin-left: 6px;
+      margin-left: 4px;
       flex: 1;
       overflow: hidden;
     }
@@ -264,16 +264,16 @@
       align-items: center;
       gap: 2px;
       background: rgba(255,255,255,.05);
-      border-radius: 4px;
-      padding: 2px 3px;
+      border-radius: 3px;
+      padding: 1px 3px;
       flex: 1;
       min-width: 0;
     }
     .wx-hour-label { display: flex; flex-direction: column; min-width: 0; }
-    .wx-hour-day   { font-size: .58em; font-weight: 700; color: var(--accent); white-space: nowrap; }
-    .wx-hour-time  { font-size: .52em; font-weight: 700; color: #ff6720; white-space: nowrap; }
-    .wx-hour-icon  { font-size: .65em; line-height: 1; flex-shrink: 0; }
-    .wx-hour-temp  { font-size: .65em; font-weight: 700; color: var(--text); white-space: nowrap; flex-shrink: 0; }
+    .wx-hour-day   { font-size: .7em; font-weight: 700; color: var(--accent); white-space: nowrap; }
+    .wx-hour-time  { font-size: .62em; font-weight: 700; color: #ff6720; white-space: nowrap; }
+    .wx-hour-icon  { font-size: .8em; line-height: 1; flex-shrink: 0; }
+    .wx-hour-temp  { font-size: 1em; font-weight: 800; color: var(--gold); white-space: nowrap; flex-shrink: 0; }
 
     /* ── Q3 Employees ───────────────────────── */
     .emp-list {
@@ -410,7 +410,7 @@
         <h2>Regional Weather</h2>
         <span class="ml" id="wx-time"></span>
       </div>
-      <div class="panel-body" id="weather-body">
+      <div class="panel-body" id="weather-body" style="padding:6px 8px;">
         <div class="center-msg"><div class="spin"></div><span>Loading weather…</span></div>
       </div>
     </div>
