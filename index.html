@@ -81,7 +81,7 @@
     #grid {
       display: flex;
       width: 100vw;
-      height: calc(100vh - 64px);
+      height: calc(100vh - 80px);
       gap: 3px;
       background: var(--bg);
     }
@@ -354,6 +354,139 @@
     }
 
     /* .sheet-frame styles moved to iframe zoom block above */
+
+    /* ── Shout-Out Overlay ───────────────────────────────── */
+    #shoutout-overlay {
+      position: fixed;
+      inset: 0;
+      background: #333f48;
+      z-index: 100;
+      opacity: 0;
+      transition: opacity 1s ease;
+      pointer-events: none;
+      display: flex;
+      flex-direction: column;
+    }
+    #shoutout-overlay.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    #so-header {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 22px;
+      padding: 28px 40px 10px;
+      flex-shrink: 0;
+      border-bottom: 2px solid rgba(255,103,32,.35);
+    }
+    .so-logo {
+      height: 64px;
+      width: auto;
+    }
+    .so-title {
+      font-family: 'Graphie', 'Arial Black', sans-serif;
+      font-size: 1.9em;
+      font-weight: 700;
+      color: #6cc24a;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+    }
+    #shoutout-body {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+    }
+    .so-slide {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 30px 80px 60px;
+      opacity: 0;
+      transition: opacity .7s ease;
+      pointer-events: none;
+    }
+    .so-slide.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .so-card {
+      max-width: 860px;
+      width: 100%;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 22px;
+    }
+    .so-to {
+      font-size: 1.15em;
+      font-weight: 500;
+      color: #c8d5de;
+      font-family: 'Red Hat Display', system-ui, sans-serif;
+      letter-spacing: .5px;
+    }
+    .so-to span {
+      font-family: 'Graphie', 'Arial Black', sans-serif;
+      font-size: 1.25em;
+      color: #ff6720;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+    }
+    .so-message {
+      font-size: 1.55em;
+      line-height: 1.65;
+      color: #fff;
+      font-style: italic;
+      font-weight: 300;
+    }
+    .so-footer {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 24px;
+      font-size: .9em;
+    }
+    .so-from { font-weight: 600; color: #c8d5de; }
+    .so-date  { color: #6a8090; }
+    .so-dots {
+      position: absolute;
+      bottom: 18px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 7px;
+    }
+    .so-empty {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #6a8090;
+      font-size: 1.2em;
+    }
+    #so-qr {
+      position: absolute;
+      bottom: 18px;
+      right: 20px;
+      width: 110px;
+      height: 110px;
+      object-fit: contain;
+      opacity: 0.92;
+    }
+    #so-progress-wrap {
+      height: 5px;
+      background: rgba(255,103,32,.18);
+      flex-shrink: 0;
+    }
+    #so-progress {
+      height: 100%;
+      background: #ff6720;
+      width: 100%;
+    }
   </style>
 </head>
 <body>
@@ -429,6 +562,21 @@
 
 </div><!-- /grid -->
 
+<!-- ═══ SHOUT-OUTS OVERLAY ══════════════════════════════════ -->
+<div id="shoutout-overlay">
+  <div id="so-header">
+    <img class="so-logo" src="logo.png" alt="SERVPRO Team Weaver">
+    <div class="so-title">HERE TO HELP&#8482;</div>
+  </div>
+  <div id="shoutout-body">
+    <div class="so-empty">Loading shout-outs…</div>
+    <img id="so-qr" src="Servpro Team Member Shout Out QR Code.png" alt="Shout-Out QR Code">
+  </div>
+  <div id="so-progress-wrap">
+    <div id="so-progress"></div>
+  </div>
+</div>
+
 <script>
 /* ═══════════════════════════════════════════════════════════
    ★  CONFIGURATION  —  update these values for your setup  ★
@@ -452,6 +600,20 @@ const CONFIG = {
 
   // How often to re-fetch weather
   WEATHER_REFRESH_MS: 10 * 60 * 1000, // 10 minutes
+
+  // Shout-Outs overlay — sheet ID for the Google Sheet collecting shout-outs
+  // Paste the 2PACX- key from File → Share → Publish to web → CSV,
+  // OR leave as a regular Sheet ID if the sheet is shared publicly.
+  SHOUTOUTS_SHEET_ID: '1Ql29tFTybTzg31-skw-GuTdtv7uTuhGhMHi0SXPnMdg',
+
+  // How often to show the shout-outs overlay (ms)
+  OVERLAY_INTERVAL_MS: 5 * 60 * 1000,   // every 5 minutes
+
+  // How long the shout-outs overlay stays visible (ms)
+  OVERLAY_DURATION_MS: 2 * 60 * 1000,   // 2 minutes
+
+  // How long each shout-out card is shown inside the overlay (ms)
+  SHOUTOUT_SLIDE_MS: 8000,              // 8 seconds per card
 };
 
 /* ═══════════════════════════════════════════════════════════
@@ -976,6 +1138,147 @@ if (location.protocol === 'file:') {
   loadData();
 }
 
+/* ═══════════════════════════════════════════════════════════
+   SHOUT-OUTS OVERLAY
+   ═══════════════════════════════════════════════════════════ */
+let _shoutouts   = [];
+let _soSlide     = 0;
+let _soSlideTimer = null;
+let _soHideTimer  = null;
+let _soProgRAF    = null;
+
+// Try multiple field name patterns to pull a value out of a row
+function getSoField(row) {
+  // Returns the first truthy value found for each argument list
+  function pick(...keys) {
+    for (const k of keys) {
+      const direct = row[k];
+      if (direct && direct.trim()) return direct.trim();
+    }
+    // Partial-match fallback
+    for (const k of keys) {
+      const lk = k.toLowerCase();
+      for (const [rk, rv] of Object.entries(row)) {
+        if (rk.toLowerCase().includes(lk) && rv && rv.trim()) return rv.trim();
+      }
+    }
+    return '';
+  }
+  return {
+    from:    pick('Your Name','From','Submitted By','Submitter Name','Name','Submitter'),
+    to:      pick('Team Member','Team Member Name','Employee','Shout Out To','Who','Recipient'),
+    message: pick('Message','Shout Out','Comments','Your Message','What','Body'),
+    ts:      pick('Timestamp','Date','Submitted','Time'),
+  };
+}
+
+function buildSoCard(row, idx, active) {
+  const f = getSoField(row);
+  const dateStr = f.ts ? fmtDate(f.ts) : '';
+  return `<div class="so-slide${active?' active':''}">
+    <div class="so-card">
+      ${f.to ? `<div class="so-to">Shout-Out to <span>${escHtml(f.to)}</span></div>` : ''}
+      ${f.message ? `<div class="so-message">"${escHtml(f.message)}"</div>` : ''}
+      <div class="so-footer">
+        ${f.from ? `<span class="so-from">— ${escHtml(f.from)}</span>` : ''}
+        ${dateStr ? `<span class="so-date">${dateStr}</span>` : ''}
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderSoSlides() {
+  const body = document.getElementById('shoutout-body');
+  if (!_shoutouts.length) {
+    body.innerHTML = '<div class="so-empty">No recent shout-outs yet!</div>';
+    return;
+  }
+  _soSlide = 0;
+  body.innerHTML =
+    _shoutouts.map((row, i) => buildSoCard(row, i, i === 0)).join('') +
+    `<div class="so-dots">${_shoutouts.map((_,i) =>
+      `<div class="dot${i===0?' active':''}"></div>`
+    ).join('')}</div>`;
+}
+
+function advanceSoSlide() {
+  const body   = document.getElementById('shoutout-body');
+  const slides = body.querySelectorAll('.so-slide');
+  const dots   = body.querySelectorAll('.so-dots .dot');
+  if (!slides.length) return;
+  slides[_soSlide].classList.remove('active');
+  dots[_soSlide]?.classList.remove('active');
+  _soSlide = (_soSlide + 1) % slides.length;
+  slides[_soSlide].classList.add('active');
+  dots[_soSlide]?.classList.add('active');
+}
+
+function startSoProgress(duration) {
+  const bar = document.getElementById('so-progress');
+  bar.style.transition = 'none';
+  bar.style.width = '100%';
+  const start = performance.now();
+  if (_soProgRAF) cancelAnimationFrame(_soProgRAF);
+  function frame(now) {
+    const pct = Math.max(0, 1 - (now - start) / duration);
+    bar.style.width = (pct * 100) + '%';
+    if (pct > 0) _soProgRAF = requestAnimationFrame(frame);
+  }
+  _soProgRAF = requestAnimationFrame(frame);
+}
+
+function showShoutoutOverlay() {
+  if (!_shoutouts.length) return; // nothing to show — skip silently
+
+  const overlay = document.getElementById('shoutout-overlay');
+  renderSoSlides();
+  startSoProgress(CONFIG.OVERLAY_DURATION_MS);
+  overlay.classList.add('active');
+
+  if (_soSlideTimer) clearInterval(_soSlideTimer);
+  if (_shoutouts.length > 1) {
+    _soSlideTimer = setInterval(advanceSoSlide, CONFIG.SHOUTOUT_SLIDE_MS);
+  }
+
+  if (_soHideTimer) clearTimeout(_soHideTimer);
+  _soHideTimer = setTimeout(hideShoutoutOverlay, CONFIG.OVERLAY_DURATION_MS);
+}
+
+function hideShoutoutOverlay() {
+  const overlay = document.getElementById('shoutout-overlay');
+  overlay.classList.remove('active');
+  if (_soSlideTimer) { clearInterval(_soSlideTimer);  _soSlideTimer = null; }
+  if (_soProgRAF)    { cancelAnimationFrame(_soProgRAF); _soProgRAF = null; }
+}
+
+async function fetchShoutouts() {
+  const id = CONFIG.SHOUTOUTS_SHEET_ID;
+  if (!id || id === 'YOUR_SHOUTOUTS_SHEET_ID_HERE') return;
+
+  try {
+    const url = id.startsWith('2PACX')
+      ? `https://docs.google.com/spreadsheets/d/e/${id}/pub?output=csv`
+      : `https://docs.google.com/spreadsheets/d/${id}/gviz/tq?tqx=out:csv`;
+
+    const r = await fetch(url);
+    if (!r.ok) throw new Error('Shoutouts HTTP ' + r.status);
+    const rows = parseCSV(await r.text());
+
+    // Filter to last 30 days
+    const cutoff = Date.now() - 30 * 24 * 3600 * 1000;
+    _shoutouts = rows.filter(row => {
+      const f = getSoField(row);
+      if (!f.ts) return true;
+      try { return new Date(f.ts).getTime() >= cutoff; } catch { return true; }
+    });
+
+    console.log('[Dashboard] Shoutouts loaded:', _shoutouts.length,
+      _shoutouts.length ? 'Columns: ' + Object.keys(_shoutouts[0]).join(', ') : '');
+  } catch(e) {
+    console.warn('[Dashboard] Shoutouts fetch error:', e);
+  }
+}
+
 /* ── Bootstrap ──────────────────────────────────────────── */
 loadWeather();
 loadSheet();
@@ -984,6 +1287,17 @@ setInterval(loadWeather, CONFIG.WEATHER_REFRESH_MS);
 
 if (location.protocol !== 'file:') {
   setInterval(loadData, CONFIG.DATA_REFRESH_MS);
+
+  // Shout-Outs overlay: fetch once now, then show every OVERLAY_INTERVAL_MS
+  fetchShoutouts().then(() => {
+    setInterval(() => {
+      fetchShoutouts(); // keep data fresh each cycle
+      showShoutoutOverlay();
+    }, CONFIG.OVERLAY_INTERVAL_MS);
+  });
+
+  // Refresh shout-outs data hourly (independent of overlay timing)
+  setInterval(fetchShoutouts, CONFIG.DATA_REFRESH_MS);
 }
 </script>
 </body>
